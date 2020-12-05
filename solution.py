@@ -38,38 +38,33 @@ class RandomAgent:
         logger.info("received", data=data)
         camera: JPGImage = data.camera
         odometry = data.odometry
-        print(odometry)
         _rgb = jpg2rgb(camera.jpg_data)
 
     def on_received_get_commands(self, context: Context, data: GetCommands):
-        if self.n == 0:
-            pwm_left = 0.0
-            pwm_right = 0.0
-        else:
-            pwm_left = np.random.uniform(0.5, 1.0)
-            pwm_right = np.random.uniform(0.5, 1.0)
         self.n += 1
 
-        t = data.at_time
-        d = 1.0
-        phase = int(t / d) % 4
+        behavior = 1
 
-        # if phase == 0:
-        #     pwm_right = +1
-        #     pwm_left = -1
-        # elif phase == 1:
-        #     pwm_right = +1
-        #     pwm_left = +1
-        # elif phase == 2:
-        #     pwm_right = -1
-        #     pwm_left = +1
-        # elif phase == 3:
-        #     pwm_right = -1
-        #     pwm_left = -1
+        if behavior == 0:
+            pwm_left = np.random.uniform(0.5, 1.0)
+            pwm_right = np.random.uniform(0.5, 1.0)
+            col = RGB(0.0, 1.0, 1.0)
+        elif behavior == 1:
+            t = data.at_time
+            d = 1.0
 
-        # pwm_left = 1.0
-        # pwm_right = 1.0
-        col = RGB(0.0, 0.0, 1.0)
+            phases = [
+                (+1, -1, RGB(1.0, 0.0, 0.0)),
+                (-1, +1, RGB(0.0, 1.0, 0.0)),
+                (+1, +1, RGB(0.0, 0.0, 1.0)),
+                (-1, -1, RGB(1.0, 1.0, 0.0)),
+            ]
+            phase = int(t / d) % len(phases)
+            pwm_right, pwm_left, col = phases[phase]
+
+        else:
+            raise ValueError(behavior)
+
         led_commands = LEDSCommands(col, col, col, col, col)
         pwm_commands = PWMCommands(motor_left=pwm_left, motor_right=pwm_right)
         commands = DB20Commands(pwm_commands, led_commands)
