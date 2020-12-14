@@ -43,7 +43,8 @@ class RandomAgent:
     def on_received_get_commands(self, context: Context, data: GetCommands):
         self.n += 1
 
-        behavior = 1
+        # behavior = 0 # random trajectory
+        behavior = 1  # primary motions
 
         if behavior == 0:
             pwm_left = np.random.uniform(0.5, 1.0)
